@@ -3,8 +3,6 @@ package users_transport_http
 import (
 	"fmt"
 	"net/http"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/lambda-lullaby/ToDoApp/internal/core/domain"
 	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
@@ -19,17 +17,6 @@ type PatchUserRequest struct {
 func (req *PatchUserRequest) Validate() error {
 	if req.FullName.Set && req.FullName.Value == nil {
 		return fmt.Errorf("`full_name` can't be null")
-	}
-	if req.FullName.Set && req.FullName.Value != nil {
-		if length := utf8.RuneCountInString(*req.FullName.Value); length < 3 || length > 100 {
-			return fmt.Errorf("`full_name` must be between 3 and 100 characters long")
-		}
-	}
-	if req.PhoneNumber.Set && req.PhoneNumber.Value != nil {
-		v := *req.PhoneNumber.Value
-		if length := len(v); length < 10 || length > 15 || !strings.HasPrefix(v, "+") {
-			return fmt.Errorf("`phone_number` must be a valid phone number")
-		}
 	}
 	return nil
 }

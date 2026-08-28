@@ -17,7 +17,7 @@ func (s *UsersService) PatchUser(ctx context.Context, id uuid.UUID, patch domain
 	}
 
 	if err := user.ApplyPatch(patch); err != nil {
-		return domain.User{}, fmt.Errorf("apply user patch: %v: %w", err, core_errors.ErrInvalidArgument)
+		return domain.User{}, fmt.Errorf("apply user patch: %w: %w", err, core_errors.ErrInvalidArgument)
 	}
 
 	updatedUser, err := s.usersRepository.UpdateUser(ctx, user)
