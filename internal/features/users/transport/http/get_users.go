@@ -21,14 +21,9 @@ func (h *UsersHTTPHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	users, err := h.usersService.GetUsers(ctx, limit, offset)
-	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
-	}
-
 	responses := make([]UserResponse, 0, len(users))
 	for _, u := range users {
 		responses = append(responses, userToResponse(u))
 	}
-	core_http.RespondJSON(w, http.StatusOK, responses)
+	core_http.Respond(ctx, w, http.StatusOK, responses, err)
 }

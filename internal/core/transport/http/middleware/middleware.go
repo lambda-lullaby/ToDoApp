@@ -5,8 +5,8 @@ import "net/http"
 type Middleware func(http.Handler) http.Handler
 
 func ChainMiddleware(h http.Handler, m ...Middleware) http.Handler {
-	for i := len(m) - 1; i >= 0; i-- {
-		h = m[i](h)
+	if len(m) == 0 {
+		return h
 	}
-	return h
+	return ChainMiddleware(m[len(m)-1](h), m[:len(m)-1]...)
 }

@@ -29,6 +29,22 @@ func RespondNoContent(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func Respond[T any](ctx context.Context, w http.ResponseWriter, statusCode int, result T, err error) {
+	if err != nil {
+		RespondError(ctx, w, err)
+		return
+	}
+	RespondJSON(w, statusCode, result)
+}
+
+func RespondEmpty(ctx context.Context, w http.ResponseWriter, err error) {
+	if err != nil {
+		RespondError(ctx, w, err)
+		return
+	}
+	RespondNoContent(w)
+}
+
 func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
 	var statusCode int
 	message := err.Error()

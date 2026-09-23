@@ -16,10 +16,5 @@ func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.usersService.GetUser(ctx, id)
-	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
-	}
-
-	core_http.RespondJSON(w, http.StatusOK, userToResponse(user))
+	core_http.Respond(ctx, w, http.StatusOK, userToResponse(user), err)
 }

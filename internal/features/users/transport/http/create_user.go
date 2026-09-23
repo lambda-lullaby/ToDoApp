@@ -21,10 +21,5 @@ func (h *UsersHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.usersService.CreateUser(ctx, req.FullName, req.PhoneNumber)
-	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
-	}
-
-	core_http.RespondJSON(w, http.StatusCreated, userToResponse(user))
+	core_http.Respond(ctx, w, http.StatusCreated, userToResponse(user), err)
 }

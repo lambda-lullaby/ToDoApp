@@ -44,10 +44,5 @@ func (h *UsersHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.usersService.PatchUser(ctx, id, req.toDomain())
-	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
-	}
-
-	core_http.RespondJSON(w, http.StatusOK, userToResponse(user))
+	core_http.Respond(ctx, w, http.StatusOK, userToResponse(user), err)
 }

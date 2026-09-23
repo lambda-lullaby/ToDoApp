@@ -15,10 +15,6 @@ func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.usersService.DeleteUser(ctx, id); err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
-	}
-
-	core_http.RespondNoContent(w)
+	err = h.usersService.DeleteUser(ctx, id)
+	core_http.RespondEmpty(ctx, w, err)
 }
