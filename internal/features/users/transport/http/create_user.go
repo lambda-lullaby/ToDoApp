@@ -11,15 +11,16 @@ type CreateUserRequest struct {
 	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
 }
 
-func (h *UsersHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
+func (h *UsersHTTPHandler) CreateUser(c *core_http.Context) error {
 	var req CreateUserRequest
-	if err := core_http.DecodeAndValidateRequest(r, &req); err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+	if err := c.Bind(&req); err != nil {
+		return err
 	}
 
-	user, err := h.usersService.CreateUser(ctx, req.FullName, req.PhoneNumber)
-	core_http.Respond(ctx, w, http.StatusCreated, userToResponse(user), err)
+	user, err := h.usersService.CreateUser(c.Context(), req.FullName, req.PhoneNumber)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusCreated, userToResponse(user))
 }

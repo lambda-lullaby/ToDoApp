@@ -1,18 +1,22 @@
 package core_http_middleware
 
-import "net/http"
+import (
+	"net/http"
 
-func CORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Request-ID")
+	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
+)
 
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
+func CORS(next core_http.HandlerFunc) core_http.HandlerFunc {
+	return func(c *core_http.Context) error {
+		header := c.Response().Header()
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+		header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Request-ID")
+
+		if c.Request().Method == http.MethodOptions {
+			return c.NoContent(http.StatusNoContent)
 		}
 
-		next.ServeHTTP(w, r)
-	})
+		return next(c)
+	}
 }

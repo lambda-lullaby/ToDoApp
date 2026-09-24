@@ -6,15 +6,15 @@ import (
 	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
-func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	id, err := parsePathID(r)
+func (h *UsersHTTPHandler) DeleteUser(c *core_http.Context) error {
+	id, err := parsePathID(c)
 	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+		return err
 	}
 
-	err = h.usersService.DeleteUser(ctx, id)
-	core_http.RespondEmpty(ctx, w, err)
+	if err := h.usersService.DeleteUser(c.Context(), id); err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }

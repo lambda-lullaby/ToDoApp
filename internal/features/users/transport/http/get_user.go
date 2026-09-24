@@ -6,15 +6,16 @@ import (
 	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
-func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	id, err := parsePathID(r)
+func (h *UsersHTTPHandler) GetUser(c *core_http.Context) error {
+	id, err := parsePathID(c)
 	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+		return err
 	}
 
-	user, err := h.usersService.GetUser(ctx, id)
-	core_http.Respond(ctx, w, http.StatusOK, userToResponse(user), err)
+	user, err := h.usersService.GetUser(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, userToResponse(user))
 }

@@ -1,7 +1,7 @@
 package core_http_server
 
 import (
-	core_http_middleware "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http/middleware"
+	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
 type APIVersion string
@@ -10,11 +10,11 @@ const ApiVersion1 APIVersion = "v1"
 
 type APIVersionRouter struct {
 	version    APIVersion
-	middleware []core_http_middleware.Middleware
+	middleware []core_http.MiddlewareFunc
 	routes     []Route
 }
 
-func NewAPIVersionRouter(version APIVersion, middleware ...core_http_middleware.Middleware) *APIVersionRouter {
+func NewAPIVersionRouter(version APIVersion, middleware ...core_http.MiddlewareFunc) *APIVersionRouter {
 	return &APIVersionRouter{version: version, middleware: middleware}
 }
 

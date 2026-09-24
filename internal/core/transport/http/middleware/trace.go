@@ -1,25 +1,28 @@
 package core_http_middleware
 
 import (
-	"net/http"
 	"time"
 
 	"go.uber.org/zap"
 
 	core_logger "github.com/lambda-lullaby/ToDoApp/internal/core/logger"
+	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
-func Trace(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Trace(next core_http.HandlerFunc) core_http.HandlerFunc {
+	return func(c *core_http.Context) error {
 		start := time.Now()
-		rw := NewResponseWriter(w)
 
-		next.ServeHTTP(rw, r)
+		err := next(c)
+		if err != nil {
+			c.Error(err)
+		}
 
-		core_logger.FromContext(r.Context()).Info("request handled",
-			zap.String("method", r.Method),
-			zap.Int("status_code", rw.StatusCode),
+		core_logger.FromContext(c.Context()).Info("request handled",
+			zap.String("method", c.Request().Method),
+			zap.Int("status_code", c.Response().Status),
 			zap.Duration("duration", time.Since(start)),
 		)
-	})
+		return err
+	}
 }

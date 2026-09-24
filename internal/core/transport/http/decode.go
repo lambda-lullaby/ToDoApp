@@ -3,7 +3,6 @@ package core_http
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/go-playground/validator/v10"
 
@@ -16,8 +15,8 @@ type validatable interface {
 	Validate() error
 }
 
-func DecodeAndValidateRequest(r *http.Request, dest any) error {
-	if err := json.NewDecoder(r.Body).Decode(dest); err != nil {
+func (c *Context) Bind(dest any) error {
+	if err := json.NewDecoder(c.request.Body).Decode(dest); err != nil {
 		return fmt.Errorf("decode json: %v: %w", err, core_errors.ErrInvalidArgument)
 	}
 

@@ -28,21 +28,21 @@ func (req *PatchUserRequest) toDomain() domain.UserPatch {
 	}
 }
 
-func (h *UsersHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	id, err := parsePathID(r)
+func (h *UsersHTTPHandler) PatchUser(c *core_http.Context) error {
+	id, err := parsePathID(c)
 	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+		return err
 	}
 
 	var req PatchUserRequest
-	if err := core_http.DecodeAndValidateRequest(r, &req); err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+	if err := c.Bind(&req); err != nil {
+		return err
 	}
 
-	user, err := h.usersService.PatchUser(ctx, id, req.toDomain())
-	core_http.Respond(ctx, w, http.StatusOK, userToResponse(user), err)
+	user, err := h.usersService.PatchUser(c.Context(), id, req.toDomain())
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, userToResponse(user))
 }

@@ -2,26 +2,27 @@ package core_http_middleware
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/google/uuid"
+
+	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
 type requestIDCtxKey struct{}
 
 const RequestIDHeader = "X-Request-ID"
 
-func RequestID(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestID := r.Header.Get(RequestIDHeader)
+func RequestID(next core_http.HandlerFunc) core_http.HandlerFunc {
+	return func(c *core_http.Context) error {
+		requestID := c.Request().Header.Get(RequestIDHeader)
 		if requestID == "" {
 			requestID = uuid.NewString()
 		}
 
-		w.Header().Set(RequestIDHeader, requestID)
-		ctx := context.WithValue(r.Context(), requestIDCtxKey{}, requestID)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+		c.Response().Header().Set(RequestIDHeader, requestID)
+		c.SetContext(context.WithValue(c.Context(), requestIDCtxKey{}, requestID))
+		return next(c)
+	}
 }
 
 func RequestIDFromContext(ctx context.Context) string {

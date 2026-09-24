@@ -12,6 +12,7 @@ import (
 	"github.com/lambda-lullaby/ToDoApp/internal/core/config"
 	core_logger "github.com/lambda-lullaby/ToDoApp/internal/core/logger"
 	core_postgres_pgx "github.com/lambda-lullaby/ToDoApp/internal/core/postgres/pool/pgx"
+	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 	core_http_middleware "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http/middleware"
 	core_http_server "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http/server"
 
@@ -47,6 +48,7 @@ func main() {
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace,
 		core_http_middleware.Panic,
+		core_http_middleware.Timeout(cfg.HTTP.RequestTimeout),
 	)
 
 	apiVersionRouterV1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
@@ -56,8 +58,8 @@ func main() {
 	httpServer.RegisterRoutes(core_http_server.Route{
 		Method: http.MethodGet,
 		Path:   "/",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
+		Handler: func(c *core_http.Context) error {
+			return c.NoContent(http.StatusOK)
 		},
 	})
 

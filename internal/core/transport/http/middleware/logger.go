@@ -1,22 +1,21 @@
 package core_http_middleware
 
 import (
-	"net/http"
-
 	"go.uber.org/zap"
 
 	core_logger "github.com/lambda-lullaby/ToDoApp/internal/core/logger"
+	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
-func Logger(base *zap.Logger) Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Logger(base *zap.Logger) core_http.MiddlewareFunc {
+	return func(next core_http.HandlerFunc) core_http.HandlerFunc {
+		return func(c *core_http.Context) error {
 			logger := base.With(
-				zap.String("request_id", RequestIDFromContext(r.Context())),
-				zap.String("url", r.URL.String()),
+				zap.String("request_id", RequestIDFromContext(c.Context())),
+				zap.String("url", c.Request().URL.String()),
 			)
-			ctx := core_logger.ToContext(r.Context(), logger)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
+			c.SetContext(core_logger.ToContext(c.Context(), logger))
+			return next(c)
+		}
 	}
 }

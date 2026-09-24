@@ -15,6 +15,7 @@ type Config struct {
 type HTTPConfig struct {
 	Port            int           `envconfig:"HTTP_PORT" default:"8080"`
 	ShutdownTimeout time.Duration `envconfig:"HTTP_SHUTDOWN_TIMEOUT" default:"5s"`
+	RequestTimeout  time.Duration `envconfig:"HTTP_REQUEST_TIMEOUT" default:"30s"`
 }
 
 type PostgresConfig struct {

@@ -1,66 +1,29 @@
 package core_http
 
-import (
-	"context"
-	"encoding/json"
-	"errors"
-	"net/http"
+import "net/http"
 
-	"go.uber.org/zap"
-
-	core_errors "github.com/lambda-lullaby/ToDoApp/internal/core/errors"
-	core_logger "github.com/lambda-lullaby/ToDoApp/internal/core/logger"
-)
-
-type errorResponse struct {
-	Error string `json:"error"`
+type Response struct {
+	http.ResponseWriter
+	Status    int
+	Committed bool
 }
 
-func RespondJSON(w http.ResponseWriter, statusCode int, body any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	if body == nil {
+func NewResponse(w http.ResponseWriter) *Response {
+	return &Response{ResponseWriter: w, Status: http.StatusOK}
+}
+
+func (r *Response) WriteHeader(status int) {
+	if r.Committed {
 		return
 	}
-	_ = json.NewEncoder(w).Encode(body)
+	r.Status = status
+	r.Committed = true
+	r.ResponseWriter.WriteHeader(status)
 }
 
-func RespondNoContent(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func Respond[T any](ctx context.Context, w http.ResponseWriter, statusCode int, result T, err error) {
-	if err != nil {
-		RespondError(ctx, w, err)
-		return
+func (r *Response) Write(b []byte) (int, error) {
+	if !r.Committed {
+		r.WriteHeader(http.StatusOK)
 	}
-	RespondJSON(w, statusCode, result)
-}
-
-func RespondEmpty(ctx context.Context, w http.ResponseWriter, err error) {
-	if err != nil {
-		RespondError(ctx, w, err)
-		return
-	}
-	RespondNoContent(w)
-}
-
-func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
-	var statusCode int
-	message := err.Error()
-
-	switch {
-	case errors.Is(err, core_errors.ErrInvalidArgument):
-		statusCode = http.StatusBadRequest
-	case errors.Is(err, core_errors.ErrNotFound):
-		statusCode = http.StatusNotFound
-	case errors.Is(err, core_errors.ErrConflict):
-		statusCode = http.StatusConflict
-	default:
-		statusCode = http.StatusInternalServerError
-		message = "internal server error"
-		core_logger.FromContext(ctx).Error("unhandled error", zap.Error(err))
-	}
-
-	RespondJSON(w, statusCode, errorResponse{Error: message})
+	return r.ResponseWriter.Write(b)
 }

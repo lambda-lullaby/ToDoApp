@@ -6,24 +6,24 @@ import (
 	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
-func (h *UsersHTTPHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	limit, err := parseOptionalIntQuery(r, "limit")
+func (h *UsersHTTPHandler) GetUsers(c *core_http.Context) error {
+	limit, err := parseOptionalIntQuery(c, "limit")
 	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+		return err
 	}
-	offset, err := parseOptionalIntQuery(r, "offset")
+	offset, err := parseOptionalIntQuery(c, "offset")
 	if err != nil {
-		core_http.RespondError(ctx, w, err)
-		return
+		return err
 	}
 
-	users, err := h.usersService.GetUsers(ctx, limit, offset)
+	users, err := h.usersService.GetUsers(c.Context(), limit, offset)
+	if err != nil {
+		return err
+	}
+
 	responses := make([]UserResponse, 0, len(users))
 	for _, u := range users {
 		responses = append(responses, userToResponse(u))
 	}
-	core_http.Respond(ctx, w, http.StatusOK, responses, err)
+	return c.JSON(http.StatusOK, responses)
 }

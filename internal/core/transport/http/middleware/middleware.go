@@ -1,10 +1,8 @@
 package core_http_middleware
 
-import "net/http"
+import core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 
-type Middleware func(http.Handler) http.Handler
-
-func ChainMiddleware(h http.Handler, m ...Middleware) http.Handler {
+func ChainMiddleware(h core_http.HandlerFunc, m ...core_http.MiddlewareFunc) core_http.HandlerFunc {
 	if len(m) == 0 {
 		return h
 	}
