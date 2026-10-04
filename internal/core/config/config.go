@@ -10,6 +10,9 @@ import (
 type Config struct {
 	HTTP     HTTPConfig
 	Postgres PostgresConfig
+
+	TimeZoneName string         `envconfig:"TIME_ZONE" default:"UTC"`
+	TimeZone     *time.Location `ignored:"true"`
 }
 
 type HTTPConfig struct {
@@ -39,5 +42,12 @@ func NewConfigMust() Config {
 	if err := envconfig.Process("", &cfg); err != nil {
 		panic(fmt.Sprintf("config: %v", err))
 	}
+
+	timeZone, err := time.LoadLocation(cfg.TimeZoneName)
+	if err != nil {
+		panic(fmt.Sprintf("config: load time zone %q: %v", cfg.TimeZoneName, err))
+	}
+	cfg.TimeZone = timeZone
+
 	return cfg
 }
