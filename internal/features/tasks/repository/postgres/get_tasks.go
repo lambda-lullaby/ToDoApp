@@ -3,6 +3,7 @@ package tasks_postgres_repository
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -18,24 +19,28 @@ func (r *TasksRepository) GetTasks(
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	var query strings.Builder
+	var args []any
+
+	query.WriteString(`
 	SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
-	FROM todoapp.tasks
-	%s
-	ORDER BY id ASC
-	LIMIT $1
-	OFFSET $2;`
-
-	args := []any{limit, offset}
-
+	FROM todoapp.tasks`)
 	if userID != nil {
-		query = fmt.Sprintf(query, "WHERE author_user_id=$3")
 		args = append(args, *userID)
-	} else {
-		query = fmt.Sprintf(query, "")
+		fmt.Fprintf(&query, " WHERE author_user_id=$%d", len(args))
 	}
+	query.WriteString(" ORDER BY id")
+	if limit != nil {
+		args = append(args, *limit)
+		fmt.Fprintf(&query, " LIMIT $%d", len(args))
+	}
+	if offset != nil {
+		args = append(args, *offset)
+		fmt.Fprintf(&query, " OFFSET $%d", len(args))
+	}
+	query.WriteString(";")
 
-	rows, err := r.pool.Query(ctx, query, args...)
+	rows, err := r.pool.Query(ctx, query.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}

@@ -1,7 +1,6 @@
 package tasks_transport_http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/lambda-lullaby/ToDoApp/internal/core/domain"
@@ -13,16 +12,6 @@ type PatchTaskRequest struct {
 	Title       core_http_types.Nullable[string] `json:"title"`
 	Description core_http_types.Nullable[string] `json:"description"`
 	Completed   core_http_types.Nullable[bool]   `json:"completed"`
-}
-
-func (req *PatchTaskRequest) Validate() error {
-	if req.Title.Set && req.Title.Value == nil {
-		return fmt.Errorf("`title` can't be null")
-	}
-	if req.Completed.Set && req.Completed.Value == nil {
-		return fmt.Errorf("`completed` can't be null")
-	}
-	return nil
 }
 
 func (req *PatchTaskRequest) toDomain() domain.TaskPatch {

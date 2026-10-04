@@ -1,11 +1,8 @@
-DROP TABLE todoapp.tasks;
+DROP INDEX todoapp.tasks_author_user_id_idx;
 
-CREATE TABLE todoapp.tasks (
-    id             UUID PRIMARY KEY,
-    title          VARCHAR(100) NOT NULL,
-    completed      BOOLEAN NOT NULL,
-    created_at     TIMESTAMPTZ NOT NULL,
-    completed_at   TIMESTAMPTZ,
-    author_user_id UUID NOT NULL REFERENCES todoapp.users(id),
-    CHECK (completed = (completed_at IS NOT NULL))
-);
+ALTER TABLE todoapp.tasks
+    DROP CONSTRAINT tasks_completed_check,
+    DROP CONSTRAINT tasks_title_length_check,
+    DROP COLUMN description,
+    DROP COLUMN version,
+    ADD CONSTRAINT tasks_check CHECK (completed = (completed_at IS NOT NULL));
