@@ -3,7 +3,6 @@ package pool
 import (
 	"context"
 	"errors"
-	"time"
 )
 
 var (
@@ -33,6 +32,4 @@ type Pool interface {
 	Exec(ctx context.Context, sql string, args ...any) (CommandTag, error)
 	Ping(ctx context.Context) error
 	Close()
-
-	OpTimeout() time.Duration
 }

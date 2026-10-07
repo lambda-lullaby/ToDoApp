@@ -1,4 +1,4 @@
-package users_postgres_repository
+package tasks_postgres_repository
 
 import (
 	"context"
@@ -12,17 +12,20 @@ import (
 	core_postgres_pool "github.com/lambda-lullaby/ToDoApp/internal/core/postgres/pool"
 )
 
-func (r *UsersRepository) GetUser(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	query := `SELECT id, version, full_name, phone_number FROM todoapp.users WHERE id=$1;`
+func (r *TasksRepository) GetTask(ctx context.Context, id uuid.UUID) (domain.Task, error) {
+	query := `
+	SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
+	FROM todoapp.tasks
+	WHERE id=$1;`
 
 	row := r.pool.QueryRow(ctx, query, id)
 
-	var m UserModel
+	var m TaskModel
 	if err := m.Scan(row); err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
-			return domain.User{}, fmt.Errorf("user with id='%s': %w", id, core_errors.ErrNotFound)
+			return domain.Task{}, fmt.Errorf("task with id='%s': %w: %w", id, err, core_errors.ErrNotFound)
 		}
-		return domain.User{}, fmt.Errorf("scan error: %w", err)
+		return domain.Task{}, fmt.Errorf("scan error: %w", err)
 	}
 	return modelToDomain(m), nil
 }

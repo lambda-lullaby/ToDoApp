@@ -11,9 +11,6 @@ import (
 )
 
 func (r *UsersRepository) UpdateUser(ctx context.Context, user domain.User) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
-	defer cancel()
-
 	query := `
 	UPDATE todoapp.users
 	SET full_name=$1, phone_number=$2, version=version+1
