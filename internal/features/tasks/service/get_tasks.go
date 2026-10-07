@@ -13,13 +13,13 @@ import (
 func (s *TasksService) GetTasks(
 	ctx context.Context,
 	userID *uuid.UUID,
-	limit *int,
-	offset *int,
+	limit int,
+	offset int,
 ) ([]domain.Task, error) {
-	if limit != nil && *limit < 0 {
+	if limit < 0 {
 		return nil, fmt.Errorf("`limit` must be non-negative: %w", core_errors.ErrInvalidArgument)
 	}
-	if offset != nil && *offset < 0 {
+	if offset < 0 {
 		return nil, fmt.Errorf("`offset` must be non-negative: %w", core_errors.ErrInvalidArgument)
 	}
 

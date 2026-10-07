@@ -13,9 +13,6 @@ import (
 )
 
 func (r *TasksRepository) GetTask(ctx context.Context, id uuid.UUID) (domain.Task, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
-	defer cancel()
-
 	query := `
 	SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
 	FROM todoapp.tasks
@@ -26,7 +23,7 @@ func (r *TasksRepository) GetTask(ctx context.Context, id uuid.UUID) (domain.Tas
 	var m TaskModel
 	if err := m.Scan(row); err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
-			return domain.Task{}, fmt.Errorf("task with id='%s': %w", id, core_errors.ErrNotFound)
+			return domain.Task{}, fmt.Errorf("task with id='%s': %w: %w", id, err, core_errors.ErrNotFound)
 		}
 		return domain.Task{}, fmt.Errorf("scan error: %w", err)
 	}

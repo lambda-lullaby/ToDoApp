@@ -36,19 +36,6 @@ func (m *TaskModel) Scan(row scanner) error {
 	)
 }
 
-func domainToModel(t domain.Task) TaskModel {
-	return TaskModel{
-		ID:           t.ID,
-		Version:      t.Version,
-		Title:        t.Title,
-		Description:  t.Description,
-		Completed:    t.Completed,
-		CreatedAt:    t.CreatedAt,
-		CompletedAt:  t.CompletedAt,
-		AuthorUserID: t.AuthorUserID,
-	}
-}
-
 func modelToDomain(m TaskModel) domain.Task {
 	return domain.Task{
 		ID:           m.ID,

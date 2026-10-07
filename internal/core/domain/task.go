@@ -3,24 +3,16 @@ package domain
 import (
 	"fmt"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
-)
-
-const (
-	taskTitleMinLength       = 1
-	taskTitleMaxLength       = 100
-	taskDescriptionMinLength = 1
-	taskDescriptionMaxLength = 1000
 )
 
 type Task struct {
 	ID      uuid.UUID
 	Version int64
 
-	Title       string
-	Description *string
+	Title       string  `validate:"task_title"`
+	Description *string `validate:"omitnil,task_description"`
 	Completed   bool
 	CreatedAt   time.Time
 	CompletedAt *time.Time
@@ -28,32 +20,9 @@ type Task struct {
 	AuthorUserID uuid.UUID
 }
 
-func CreateTask(title string, description *string, authorUserID uuid.UUID) Task {
-	return Task{
-		ID:      uuid.New(),
-		Version: 1,
-
-		Title:       title,
-		Description: description,
-		Completed:   false,
-		CreatedAt:   time.Now(),
-		CompletedAt: nil,
-
-		AuthorUserID: authorUserID,
-	}
-}
-
 func (t Task) Validate() error {
-	if length := utf8.RuneCountInString(t.Title); length < taskTitleMinLength || length > taskTitleMaxLength {
-		return fmt.Errorf("`Title` must be between %d and %d characters long", taskTitleMinLength, taskTitleMaxLength)
-	}
-	if t.Description != nil {
-		if length := utf8.RuneCountInString(*t.Description); length < taskDescriptionMinLength || length > taskDescriptionMaxLength {
-			return fmt.Errorf(
-				"`Description` must be between %d and %d characters long",
-				taskDescriptionMinLength, taskDescriptionMaxLength,
-			)
-		}
+	if err := validate.Struct(t); err != nil {
+		return err
 	}
 
 	if t.Completed {
@@ -70,6 +39,34 @@ func (t Task) Validate() error {
 	}
 
 	return nil
+}
+
+type TaskCreate struct {
+	Title        string    `validate:"task_title"`
+	Description  *string   `validate:"omitnil,task_description"`
+	AuthorUserID uuid.UUID `validate:"required"`
+}
+
+func (c TaskCreate) Validate() error {
+	return validate.Struct(c)
+}
+
+type TaskUpdate struct {
+	Version     int64
+	Title       string
+	Description *string
+	Completed   bool
+	CompletedAt *time.Time
+}
+
+func (t Task) ToUpdate() TaskUpdate {
+	return TaskUpdate{
+		Version:     t.Version,
+		Title:       t.Title,
+		Description: t.Description,
+		Completed:   t.Completed,
+		CompletedAt: t.CompletedAt,
+	}
 }
 
 type TaskPatch struct {

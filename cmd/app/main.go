@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	"github.com/lambda-lullaby/ToDoApp/internal/core/config"
+	"github.com/lambda-lullaby/ToDoApp/internal/core/domain"
 	core_logger "github.com/lambda-lullaby/ToDoApp/internal/core/logger"
 	core_postgres_pgx "github.com/lambda-lullaby/ToDoApp/internal/core/postgres/pool/pgx"
 	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
@@ -35,6 +36,13 @@ func main() {
 
 	time.Local = cfg.TimeZone
 	logger.Info("time zone set", zap.String("time_zone", cfg.TimeZone.String()))
+
+	domain.RegisterTaskValidation(domain.TaskLimits{
+		TitleMinLength:       cfg.Task.TitleMinLength,
+		TitleMaxLength:       cfg.Task.TitleMaxLength,
+		DescriptionMinLength: cfg.Task.DescriptionMinLength,
+		DescriptionMaxLength: cfg.Task.DescriptionMaxLength,
+	})
 
 	postgresPool, err := core_postgres_pgx.New(ctx, cfg.Postgres.DSN(), cfg.Postgres.OpTimeout)
 	if err != nil {

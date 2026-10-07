@@ -10,6 +10,7 @@ import (
 type Config struct {
 	HTTP     HTTPConfig
 	Postgres PostgresConfig
+	Task     TaskConfig
 
 	TimeZoneName string         `envconfig:"TIME_ZONE" default:"UTC"`
 	TimeZone     *time.Location `ignored:"true"`
@@ -28,6 +29,13 @@ type PostgresConfig struct {
 	Password  string        `envconfig:"POSTGRES_PASSWORD" required:"true"`
 	DB        string        `envconfig:"POSTGRES_DB" required:"true"`
 	OpTimeout time.Duration `envconfig:"POSTGRES_OP_TIMEOUT" default:"5s"`
+}
+
+type TaskConfig struct {
+	TitleMinLength       int `envconfig:"TASK_TITLE_MIN_LENGTH" default:"1"`
+	TitleMaxLength       int `envconfig:"TASK_TITLE_MAX_LENGTH" default:"100"`
+	DescriptionMinLength int `envconfig:"TASK_DESCRIPTION_MIN_LENGTH" default:"1"`
+	DescriptionMaxLength int `envconfig:"TASK_DESCRIPTION_MAX_LENGTH" default:"1000"`
 }
 
 func (c PostgresConfig) DSN() string {

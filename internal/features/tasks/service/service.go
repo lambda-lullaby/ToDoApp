@@ -9,11 +9,11 @@ import (
 )
 
 type TasksRepository interface {
-	SaveTask(ctx context.Context, task domain.Task) (domain.Task, error)
+	CreateTask(ctx context.Context, input domain.TaskCreate) (domain.Task, error)
 	GetTask(ctx context.Context, id uuid.UUID) (domain.Task, error)
-	UpdateTask(ctx context.Context, task domain.Task) (domain.Task, error)
+	UpdateTask(ctx context.Context, id uuid.UUID, input domain.TaskUpdate) (domain.Task, error)
 	DeleteTask(ctx context.Context, id uuid.UUID) error
-	GetTasks(ctx context.Context, userID *uuid.UUID, limit *int, offset *int) ([]domain.Task, error)
+	GetTasks(ctx context.Context, userID *uuid.UUID, limit int, offset int) ([]domain.Task, error)
 }
 
 type TasksService struct {

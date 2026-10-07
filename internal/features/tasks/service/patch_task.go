@@ -20,7 +20,7 @@ func (s *TasksService) PatchTask(ctx context.Context, id uuid.UUID, patch domain
 		return domain.Task{}, fmt.Errorf("apply task patch: %w: %w", err, core_errors.ErrInvalidArgument)
 	}
 
-	updatedTask, err := s.tasksRepository.UpdateTask(ctx, task)
+	updatedTask, err := s.tasksRepository.UpdateTask(ctx, task.ID, task.ToUpdate())
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("update task in repository: %w", err)
 	}

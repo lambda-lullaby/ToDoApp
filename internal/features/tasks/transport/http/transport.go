@@ -11,8 +11,8 @@ import (
 )
 
 type TasksService interface {
-	CreateTask(ctx context.Context, title string, description *string, authorUserID uuid.UUID) (domain.Task, error)
-	GetTasks(ctx context.Context, userID *uuid.UUID, limit *int, offset *int) ([]domain.Task, error)
+	CreateTask(ctx context.Context, input domain.TaskCreate) (domain.Task, error)
+	GetTasks(ctx context.Context, userID *uuid.UUID, limit int, offset int) ([]domain.Task, error)
 	GetTask(ctx context.Context, id uuid.UUID) (domain.Task, error)
 	DeleteTask(ctx context.Context, id uuid.UUID) error
 	PatchTask(ctx context.Context, id uuid.UUID, patch domain.TaskPatch) (domain.Task, error)

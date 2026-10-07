@@ -10,9 +10,6 @@ import (
 )
 
 func (r *TasksRepository) DeleteTask(ctx context.Context, id uuid.UUID) error {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
-	defer cancel()
-
 	query := `DELETE FROM todoapp.tasks WHERE id=$1;`
 
 	cmdTag, err := r.pool.Exec(ctx, query, id)
@@ -20,7 +17,7 @@ func (r *TasksRepository) DeleteTask(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("exec error: %w", err)
 	}
 	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("task with id='%s': %w", id, core_errors.ErrNotFound)
+		return fmt.Errorf("task with id='%s': %w: %w", id, err, core_errors.ErrNotFound)
 	}
 	return nil
 }

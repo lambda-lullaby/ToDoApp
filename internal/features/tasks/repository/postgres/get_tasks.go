@@ -13,12 +13,9 @@ import (
 func (r *TasksRepository) GetTasks(
 	ctx context.Context,
 	userID *uuid.UUID,
-	limit *int,
-	offset *int,
+	limit int,
+	offset int,
 ) ([]domain.Task, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
-	defer cancel()
-
 	var query strings.Builder
 	var args []any
 
@@ -29,16 +26,8 @@ func (r *TasksRepository) GetTasks(
 		args = append(args, *userID)
 		fmt.Fprintf(&query, " WHERE author_user_id=$%d", len(args))
 	}
-	query.WriteString(" ORDER BY id")
-	if limit != nil {
-		args = append(args, *limit)
-		fmt.Fprintf(&query, " LIMIT $%d", len(args))
-	}
-	if offset != nil {
-		args = append(args, *offset)
-		fmt.Fprintf(&query, " OFFSET $%d", len(args))
-	}
-	query.WriteString(";")
+	args = append(args, limit, offset)
+	fmt.Fprintf(&query, " ORDER BY id LIMIT $%d OFFSET $%d;", len(args)-1, len(args))
 
 	rows, err := r.pool.Query(ctx, query.String(), args...)
 	if err != nil {

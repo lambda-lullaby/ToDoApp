@@ -44,16 +44,16 @@ func parsePathID(c *core_http.Context) (uuid.UUID, error) {
 	return id, nil
 }
 
-func parseOptionalIntQuery(c *core_http.Context, key string) (*int, error) {
+func parseIntQuery(c *core_http.Context, key string, defaultValue int) (int, error) {
 	raw := c.QueryParam(key)
 	if raw == "" {
-		return nil, nil
+		return defaultValue, nil
 	}
 	value, err := strconv.Atoi(raw)
 	if err != nil {
-		return nil, fmt.Errorf("parse `%s` query parameter: %v: %w", key, err, core_errors.ErrInvalidArgument)
+		return 0, fmt.Errorf("parse `%s` query parameter: %v: %w", key, err, core_errors.ErrInvalidArgument)
 	}
-	return &value, nil
+	return value, nil
 }
 
 func parseOptionalUUIDQuery(c *core_http.Context, key string) (*uuid.UUID, error) {

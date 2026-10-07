@@ -6,16 +6,21 @@ import (
 	core_http "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http"
 )
 
+const (
+	defaultTasksLimit  = 100
+	defaultTasksOffset = 0
+)
+
 func (h *TasksHTTPHandler) GetTasks(c *core_http.Context) error {
 	userID, err := parseOptionalUUIDQuery(c, "user_id")
 	if err != nil {
 		return err
 	}
-	limit, err := parseOptionalIntQuery(c, "limit")
+	limit, err := parseIntQuery(c, "limit", defaultTasksLimit)
 	if err != nil {
 		return err
 	}
-	offset, err := parseOptionalIntQuery(c, "offset")
+	offset, err := parseIntQuery(c, "offset", defaultTasksOffset)
 	if err != nil {
 		return err
 	}
