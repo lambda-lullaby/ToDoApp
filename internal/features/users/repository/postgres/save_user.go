@@ -8,9 +8,6 @@ import (
 )
 
 func (r *UsersRepository) SaveUser(ctx context.Context, user domain.User) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
-	defer cancel()
-
 	query := `
 	INSERT INTO todoapp.users (id, version, full_name, phone_number)
 	VALUES ($1, $2, $3, $4)

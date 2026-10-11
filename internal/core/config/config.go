@@ -10,6 +10,10 @@ import (
 type Config struct {
 	HTTP     HTTPConfig
 	Postgres PostgresConfig
+	Task     TaskConfig
+
+	TimeZoneName string         `envconfig:"TIME_ZONE" default:"UTC"`
+	TimeZone     *time.Location `ignored:"true"`
 }
 
 type HTTPConfig struct {
@@ -27,6 +31,13 @@ type PostgresConfig struct {
 	OpTimeout time.Duration `envconfig:"POSTGRES_OP_TIMEOUT" default:"5s"`
 }
 
+type TaskConfig struct {
+	TitleMinLength       int `envconfig:"TASK_TITLE_MIN_LENGTH" default:"1"`
+	TitleMaxLength       int `envconfig:"TASK_TITLE_MAX_LENGTH" default:"100"`
+	DescriptionMinLength int `envconfig:"TASK_DESCRIPTION_MIN_LENGTH" default:"1"`
+	DescriptionMaxLength int `envconfig:"TASK_DESCRIPTION_MAX_LENGTH" default:"1000"`
+}
+
 func (c PostgresConfig) DSN() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
@@ -39,5 +50,12 @@ func NewConfigMust() Config {
 	if err := envconfig.Process("", &cfg); err != nil {
 		panic(fmt.Sprintf("config: %v", err))
 	}
+
+	timeZone, err := time.LoadLocation(cfg.TimeZoneName)
+	if err != nil {
+		panic(fmt.Sprintf("config: load time zone %q: %v", cfg.TimeZoneName, err))
+	}
+	cfg.TimeZone = timeZone
+
 	return cfg
 }

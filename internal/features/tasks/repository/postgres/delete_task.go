@@ -1,0 +1,23 @@
+package tasks_postgres_repository
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/google/uuid"
+
+	core_errors "github.com/lambda-lullaby/ToDoApp/internal/core/errors"
+)
+
+func (r *TasksRepository) DeleteTask(ctx context.Context, id uuid.UUID) error {
+	query := `DELETE FROM todoapp.tasks WHERE id=$1;`
+
+	cmdTag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("exec error: %w", err)
+	}
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("task with id='%s': %w: %w", id, err, core_errors.ErrNotFound)
+	}
+	return nil
+}

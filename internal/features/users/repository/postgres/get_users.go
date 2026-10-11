@@ -9,9 +9,6 @@ import (
 )
 
 func (r *UsersRepository) GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
-	defer cancel()
-
 	var query strings.Builder
 	var args []any
 

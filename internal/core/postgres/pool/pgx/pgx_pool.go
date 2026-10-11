@@ -37,23 +37,27 @@ func New(ctx context.Context, dsn string, opTimeout time.Duration) (*Pool, error
 	return p, nil
 }
 
-func (p *Pool) OpTimeout() time.Duration {
-	return p.opTimeout
-}
-
 func (p *Pool) Query(ctx context.Context, sql string, args ...any) (core_postgres_pool.Rows, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.opTimeout)
+
 	rows, err := p.Pool.Query(ctx, sql, args...)
 	if err != nil {
+		cancel()
 		return nil, mapErr(err)
 	}
-	return &pgxRows{rows: rows}, nil
+	return &pgxRows{rows: rows, cancel: cancel}, nil
 }
 
 func (p *Pool) QueryRow(ctx context.Context, sql string, args ...any) core_postgres_pool.Row {
-	return &pgxRow{row: p.Pool.QueryRow(ctx, sql, args...)}
+	ctx, cancel := context.WithTimeout(ctx, p.opTimeout)
+
+	return &pgxRow{row: p.Pool.QueryRow(ctx, sql, args...), cancel: cancel}
 }
 
 func (p *Pool) Exec(ctx context.Context, sql string, args ...any) (core_postgres_pool.CommandTag, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.opTimeout)
+	defer cancel()
+
 	tag, err := p.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return nil, mapErr(err)
@@ -62,10 +66,13 @@ func (p *Pool) Exec(ctx context.Context, sql string, args ...any) (core_postgres
 }
 
 type pgxRow struct {
-	row pgx.Row
+	row    pgx.Row
+	cancel context.CancelFunc
 }
 
 func (r *pgxRow) Scan(dest ...any) error {
+	defer r.cancel()
+
 	if err := r.row.Scan(dest...); err != nil {
 		return mapErr(err)
 	}
@@ -73,7 +80,8 @@ func (r *pgxRow) Scan(dest ...any) error {
 }
 
 type pgxRows struct {
-	rows pgx.Rows
+	rows   pgx.Rows
+	cancel context.CancelFunc
 }
 
 func (r *pgxRows) Next() bool {
@@ -96,6 +104,7 @@ func (r *pgxRows) Err() error {
 
 func (r *pgxRows) Close() {
 	r.rows.Close()
+	r.cancel()
 }
 
 type pgxCommandTag struct {
