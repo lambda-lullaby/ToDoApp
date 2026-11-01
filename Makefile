@@ -47,13 +47,13 @@ migrate-down: ## Откатить миграции
 		-database "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@todoapp-postgres:5432/$(POSTGRES_DB)?sslmode=disable&search_path=public" \
 		down
 
-todoapp-run:
+todoapp-run: ## Запустить локально на хост-системе (нужен env-port-forward)
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
 	export POSTGRES_HOST=localhost && \
 	go run ${PROJECT_ROOT}/cmd/app
 
-todoapp-deploy:
+todoapp-deploy: ## Собрать образ и запустить приложение в Docker Compose
 	@docker compose up -d --build todoapp
 
-todoapp-undeploy:
+todoapp-undeploy: ## Остановить сервис приложения
 	@docker compose down todoapp
