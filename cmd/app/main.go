@@ -18,6 +18,9 @@ import (
 	core_http_middleware "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http/middleware"
 	core_http_server "github.com/lambda-lullaby/ToDoApp/internal/core/transport/http/server"
 
+	statistics_postgres_repository "github.com/lambda-lullaby/ToDoApp/internal/features/statistics/repository/postgres"
+	statistics_service "github.com/lambda-lullaby/ToDoApp/internal/features/statistics/service"
+	statistics_transport_http "github.com/lambda-lullaby/ToDoApp/internal/features/statistics/transport/http"
 	tasks_postgres_repository "github.com/lambda-lullaby/ToDoApp/internal/features/tasks/repository/postgres"
 	tasks_service "github.com/lambda-lullaby/ToDoApp/internal/features/tasks/service"
 	tasks_transport_http "github.com/lambda-lullaby/ToDoApp/internal/features/tasks/transport/http"
@@ -59,6 +62,10 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
+	statisticsRepository := statistics_postgres_repository.NewStatisticsRepository(postgresPool)
+	statisticsService := statistics_service.NewStatisticsService(statisticsRepository)
+	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
+
 	httpServer := core_http_server.NewHTTPServer(
 		cfg.HTTP.Port,
 		logger,
@@ -73,6 +80,7 @@ func main() {
 	apiVersionRouterV1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouterV1.AddRoutes(usersTransportHTTP.Routes()...)
 	apiVersionRouterV1.AddRoutes(tasksTransportHTTP.Routes()...)
+	apiVersionRouterV1.AddRoutes(statisticsTransportHTTP.Routes()...)
 	httpServer.RegisterAPIRouters(apiVersionRouterV1)
 
 	httpServer.RegisterRoutes(core_http_server.Route{

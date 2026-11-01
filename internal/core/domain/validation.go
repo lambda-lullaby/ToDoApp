@@ -6,7 +6,19 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var validate = validator.New(validator.WithRequiredStructEnabled())
+var validate = newValidator()
+
+func newValidator() *validator.Validate {
+	v := validator.New(validator.WithRequiredStructEnabled())
+	_ = v.RegisterValidation("statistics_to_after_from", func(fl validator.FieldLevel) bool {
+		filter, ok := fl.Parent().Interface().(StatisticsFilter)
+		if !ok || filter.From == nil || filter.To == nil {
+			return true
+		}
+		return filter.To.After(*filter.From)
+	})
+	return v
+}
 
 type TaskLimits struct {
 	TitleMinLength       int
