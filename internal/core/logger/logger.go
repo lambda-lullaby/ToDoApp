@@ -2,6 +2,8 @@ package core_logger
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -9,9 +11,16 @@ import (
 
 type ctxKey struct{}
 
-func New(level zapcore.Level) *zap.Logger {
+func New(level zapcore.Level, folder string) *zap.Logger {
 	cfg := zap.NewProductionConfig()
 	cfg.Level = zap.NewAtomicLevelAt(level)
+
+	if folder != "" {
+		if err := os.MkdirAll(folder, 0o755); err != nil {
+			panic(err)
+		}
+		cfg.OutputPaths = append(cfg.OutputPaths, filepath.Join(folder, "app.log"))
+	}
 
 	logger, err := cfg.Build()
 	if err != nil {

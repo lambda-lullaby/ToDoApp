@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -34,7 +35,7 @@ func main() {
 	defer stop()
 
 	cfg := config.NewConfigMust()
-	logger := core_logger.New(zapcore.InfoLevel)
+	logger := core_logger.New(zapcore.InfoLevel, cfg.LoggerFolder)
 	defer logger.Sync()
 
 	time.Local = cfg.TimeZone
@@ -83,11 +84,13 @@ func main() {
 	apiVersionRouterV1.AddRoutes(statisticsTransportHTTP.Routes()...)
 	httpServer.RegisterAPIRouters(apiVersionRouterV1)
 
+	staticFiles := http.FileServer(http.Dir(filepath.Join(cfg.ProjectRoot, "public")))
 	httpServer.RegisterRoutes(core_http_server.Route{
 		Method: http.MethodGet,
 		Path:   "/",
 		Handler: func(c *core_http.Context) error {
-			return c.NoContent(http.StatusOK)
+			staticFiles.ServeHTTP(c.Response(), c.Request())
+			return nil
 		},
 	})
 

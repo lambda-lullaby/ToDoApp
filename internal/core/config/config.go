@@ -12,6 +12,9 @@ type Config struct {
 	Postgres PostgresConfig
 	Task     TaskConfig
 
+	ProjectRoot  string `envconfig:"PROJECT_ROOT" default:"."`
+	LoggerFolder string `envconfig:"LOGGER_FOLDER"`
+
 	TimeZoneName string         `envconfig:"TIME_ZONE" default:"UTC"`
 	TimeZone     *time.Location `ignored:"true"`
 }
