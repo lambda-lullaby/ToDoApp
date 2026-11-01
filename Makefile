@@ -4,7 +4,7 @@ export
 PROJECT_ROOT := $(shell pwd)
 export PROJECT_ROOT
 
-.PHONY: help env-up env-down env-cleanup env-port-forward env-port-close migrate-create migrate-up migrate-down
+.PHONY: help env-up env-down env-cleanup env-port-forward env-port-close migrate-create migrate-up migrate-down todoapp-run todoapp-deploy todoapp-undeploy
 
 help: ## Показать список доступных команд
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -46,3 +46,14 @@ migrate-down: ## Откатить миграции
 		-path /migrations \
 		-database "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@todoapp-postgres:5432/$(POSTGRES_DB)?sslmode=disable&search_path=public" \
 		down
+
+todoapp-run:
+	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export POSTGRES_HOST=localhost && \
+	go run ${PROJECT_ROOT}/cmd/app
+
+todoapp-deploy:
+	@docker compose up -d --build todoapp
+
+todoapp-undeploy:
+	@docker compose down todoapp
